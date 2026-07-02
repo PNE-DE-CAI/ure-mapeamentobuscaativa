@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro — URE Caieiras 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="js/database.js"></script>
+    <script src="js/analise.js"></script>
+    <script src="js/ui.js"></script>
+    <style>
+        body { font-family: 'Roboto', sans-serif; }
+        .sed-gradient { background: linear-gradient(135deg, #005CA9 0%, #CC0000 100%); }
+        .dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; transition: all .3s; }
+        .dot.active { background: #CC0000; color: #fff; transform: scale(1.1); }
+        .dot.done { background: #10B981; color: #fff; }
+        .dot.idle { background: #E5E7EB; color: #9CA3AF; }
+        .action-card { border-left: 4px solid; transition: transform .2s; }
+        .action-card:hover { transform: translateX(4px); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<header class="sed-gradient text-white shadow-lg relative">
+    <div class="absolute top-3 right-4 bg-red-700 px-3 py-1 rounded-full text-xs font-bold">2026</div>
+    <div class="container mx-auto px-4 py-4">
+        <div class="flex flex-col md:flex-row items-center justify-between">
+            <div class="flex items-center mb-3 md:mb-0">
+                <img src="https://i.ibb.co/dscRg9Ms/LOGO-URE-CAIEIRAS-2-1.png" alt="Logo" class="h-14 mr-4">
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold">Mapeamento de Aluno</h1>
+                    <p class="text-sm opacity-90" id="subTitle">Novo Registro — URE Caieiras 2026</p>
+                </div>
+            </div>
+            <nav class="flex space-x-4 text-sm">
+                <a href="index.html" class="hover:text-yellow-300 transition"><i class="fas fa-home mr-1"></i>Início</a>
+                <a href="lista.html" class="hover:text-yellow-300 transition"><i class="fas fa-chart-pie mr-1"></i>Painel</a>
+                <a href="cadastro.html" class="text-yellow-300 font-semibold"><i class="fas fa-plus-circle mr-1"></i>Novo</a>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="container mx-auto px-4 py-8 max-w-4xl">
+    <!-- PROGRESSO -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-2">
+            <h2 class="text-lg font-semibold text-gray-800">Formulário de Mapeamento</h2>
+            <span class="text-sm text-gray-500" id="progLabel">Passo 1 de 5</span>
+        </div>
+        <div class="h-2 bg-gray-200 rounded-full overflow-hidden"><div id="progBar" class="h-full bg-[#CC0000] rounded-full transition-all duration-500" style="width:20%"></div></div>
+        <div class="flex justify-between mt-4">
+            <div class="flex flex-col items-center"><div class="dot active" id="d1">1</div><span class="text-[11px] mt-1 font-medium text-gray-600">Dados</span></div>
+            <div class="flex flex-col items-center"><div class="dot idle" id="d2">2</div><span class="text-[11px] mt-1 font-medium text-gray-600">Frequência</span></div>
+            <div class="flex flex-col items-center"><div class="dot idle" id="d3">3</div><span class="text-[11px] mt-1 font-medium text-gray-600">Acadêmico</span></div>
+            <div class="flex flex-col items-center"><div class="dot idle" id="d4">4</div><span class="text-[11px] mt-1 font-medium text-gray-600">Sociofamiliar</span></div>
+            <div class="flex flex-col items-center"><div class="dot idle" id="d5">5</div><span class="text-[11px] mt-1 font-medium text-gray-600">Resultados</span></div>
+        </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+
+        <!-- STEP 1 -->
+        <div id="step1" class="p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-6"><i class="fas fa-user mr-2 text-[#005CA9]"></i>1. Dados Gerais</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Aluno</label>
+                    <input type="text" id="nomeAluno" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ano/Série *</label>
+                    <select id="anoSerie" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+                        <option value="">Selecione</option>
+                        <option value="1anoEF">1º Ano EF</option><option value="2anoEF">2º Ano EF</option>
+                        <option value="3anoEF">3º Ano EF</option><option value="4anoEF">4º Ano EF</option>
+                        <option value="5anoEF">5º Ano EF</option><option value="6anoEF">6º Ano EF</option>
+                        <option value="7anoEF">7º Ano EF</option><option value="8anoEF">8º Ano EF</option>
+                        <option value="9anoEF">9º Ano EF</option>
+                        <option value="1anoEM">1º Ano EM</option><option value="2anoEM">2º Ano EM</option>
+                        <option value="3anoEM">3º Ano EM</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Turno *</label>
+                    <select id="turno" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+                        <option value="">Selecione</option>
+                        <option value="manha">Manhã</option><option value="tarde">Tarde</option>
+                        <option value="noite">Noite</option><option value="integral">Integral</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Idade *</label>
+                    <input type="number" id="idade" min="5" max="25" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+                </div>
+            </div>
+            <div class="mt-5">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Período de Análise (semanas)</label>
+                <input type="number" id="periodoAnalise" value="8" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+            </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div id="step2" class="p-6 hidden">
+            <h3 class="text-xl font-semibold text-gray-800 mb-6"><i class="fas fa-chart-line mr-2 text-blue-600"></i>2. Análise de Frequência</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">% de Frequência</label>
+                    <input type="number" id="frequenciaPercentual" min="0" max="100" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+                    <div class="mt-2">
+                        <div class="flex justify-between text-xs"><span>0%</span><span id="freqLbl">—</span><span>100%</span></div>
+                        <div class="h-2 bg-gray-300 rounded-full mt-1"><div id="freqBar" class="h-full rounded-full transition-all"></div></div>
+                    </div>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Total de Faltas</label>
+                    <input type="number" id="totalFaltas" min="0" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Padrão de Faltas</label>
+                    <select id="padraoFaltas" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+                        <option value="esporadico">Esporádicas</option><option value="seguidos">Dias consecutivos</option>
+                        <option value="especificos">Dias específicos</option><option value="aumentando">Aumentando</option>
+                    </select>
+                </div>
+            </div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Horários com maior absenteísmo:</label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <label class="flex items-center text-sm"><input type="checkbox" name="horarios" value="primeiras" class="mr-2">Primeiras aulas</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="horarios" value="ultimas" class="mr-2">Últimas aulas</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="horarios" value="posrecreio" class="mr-2">Pós-recreio</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="horarios" value="todos" class="mr-2">Todos</label>
+            </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div id="step3" class="p-6 hidden">
+            <h3 class="text-xl font-semibold text-gray-800 mb-6"><i class="fas fa-graduation-cap mr-2 text-green-600"></i>3. Desempenho Acadêmico</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Média Geral (0-10)</label>
+                    <input type="number" id="mediaGeral" min="0" max="10" step="0.1" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tendência de Notas</label>
+                    <select id="tendenciaNotas" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+                        <option value="melhorando">Melhorando</option><option value="estavel">Estável</option>
+                        <option value="piorando">Piorando</option><option value="instavel">Oscilante</option>
+                    </select>
+                </div>
+            </div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Disciplinas com maior dificuldade (até 3):</label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="matematica" class="mr-2">Matemática</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="portugues" class="mr-2">Português</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="ciencias" class="mr-2">Ciências</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="historia" class="mr-2">História</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="geografia" class="mr-2">Geografia</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="ingles" class="mr-2">Inglês</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="educacaofisica" class="mr-2">Ed. Física</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="artes" class="mr-2">Artes</label>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Participação em Sala</label>
+                <select id="participacao" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+                    <option value="ativa">Ativa</option><option value="moderada">Moderada</option>
+                    <option value="passiva">Passiva</option><option value="isolada">Isolada</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- STEP 4 -->
+        <div id="step4" class="p-6 hidden">
+            <h3 class="text-xl font-semibold text-gray-800 mb-6"><i class="fas fa-home mr-2 text-purple-600"></i>4. Contexto Sociofamiliar</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Transporte</label>
+                    <select id="transporte" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+                        <option value="transporte_publico">Transporte Público</option><option value="a_pe">A Pé</option>
+                        <option value="bicicleta">Bicicleta</option><option value="carro_familiar">Carro Familiar</option>
+                        <option value="escolar">Ônibus Escolar</option><option value="outros">Outros</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Deslocamento (min)</label>
+                    <input type="number" id="tempoDeslocamento" min="0" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Acompanhamento Familiar</label>
+                    <select id="acompanhamento" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+                        <option value="intenso">Intenso (diário)</option><option value="regular">Regular (semanal)</option>
+                        <option value="esporadico">Esporádico (mensal)</option><option value="inexistente">Inexistente</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Situação Familiar</label>
+                    <select id="situacaoFamiliar" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none">
+                        <option value="estavel">Estável</option><option value="separacao">Separação/Divórcio</option>
+                        <option value="mudanca">Mudança Recente</option><option value="problemas_saude">Problemas de Saúde</option>
+                        <option value="outros">Outras Situações</option>
+                    </select>
+                </div>
+            </div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Fatores de Risco Adicionais:</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="trabalho" class="mr-2">Trabalho fora do horário</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="cuidado" class="mr-2">Cuidado de familiares</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="saude" class="mr-2">Problemas de saúde física</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="mental" class="mr-2">Problemas de saúde mental</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="material" class="mr-2">Falta de material escolar</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="alimentacao" class="mr-2">Problemas de alimentação</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="bullying" class="mr-2">Relatos de bullying</label>
+                <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="drogas" class="mr-2">Suspeita envolvimento ilícitos</label>
+            </div>
+        </div>
+
+        <!-- STEP 5 -->
+        <div id="step5" class="p-6 hidden">
+            <h3 class="text-xl font-semibold text-gray-800 mb-6"><i class="fas fa-chart-bar mr-2 text-[#CC0000]"></i>5. Análise e Plano de Ações</h3>
+            <div id="resultArea">
+                <div class="text-center py-12 text-gray-400">
+                    <i class="fas fa-clipboard-check text-5xl mb-3"></i>
+                    <p>Preencha as etapas e clique em "Gerar Análise"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="p-5 border-t bg-gray-50 flex justify-between">
+            <button id="btnPrev" onclick="prevStep()" class="px-5 py-2 border rounded-md text-gray-700 hover:bg-gray-100 hidden">
+                <i class="fas fa-arrow-left mr-2"></i>Anterior
+            </button>
+            <button id="btnNext" onclick="nextStep()" class="ml-auto px-5 py-2 bg-[#CC0000] text-white rounded-md hover:bg-[#a30000] transition">
+                Próximo <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+    </div>
+</main>
+
+<footer class="bg-gradient-to-r from-blue-900 to-gray-900 text-white py-6 mt-12">
+    <div class="container mx-auto px-4 text-center text-sm text-gray-400">
+        <p>© 2026 URE Caieiras — SEDUC/SP</p>
+    </div>
+</footer>
+
+<script>
+let step = 1, totalSteps = 5, dados = {}, editId = null, chartFatores = null;
+
+editId = getUrlParam('id');
+
+/* ═══ NAVEGAÇÃO ═══ */
+function showStep(s) {
+    for (let i = 1; i <= totalSteps; i++) {
+        document.getElementById('step' + i).classList.toggle('hidden', i !== s);
+        const dot = document.getElementById('d' + i);
+        dot.className = 'dot ' + (i < s ? 'done' : i === s ? 'active' : 'idle');
+    }
+    document.getElementById('progBar').style.width = ((s - 1) / (totalSteps - 1) * 100) + '%';
+    document.getElementById('progLabel').textContent = `Passo ${s} de ${totalSteps}`;
+    document.getElementById('btnPrev').classList.toggle('hidden', s === 1);
+
+    if (s === totalSteps) {
+        document.getElementById('btnNext').innerHTML = 'Gerar Análise <i class="fas fa-chart-bar ml-2"></i>';
+        document.getElementById('btnNext').onclick = gerarAnalise;
+    } else {
+        document.getElementById('btnNext').innerHTML = 'Próximo <i class="fas fa-arrow-right ml-2"></i>';
+        document.getElementById('btnNext').onclick = nextStep;
+    }
+}
+
+function nextStep() {
+    if (!validar(step)) return;
+    coletar(step);
+    step++;
+    showStep(step);
+}
+
+function prevStep() { if (step > 1) { step--; showStep(step); } }
+
+/* ═══ VALIDAÇÃO ═══ */
+function validar(s) {
+    if (s === 1) {
+        if (!document.getElementById('anoSerie').value || !document.getElementById('turno').value || !document.getElementById('idade').value) {
+            showToast('Preencha Ano/Série, Turno e Idade.', 'error'); return false;
+        }
+    }
+    if (s === 2) {
+        const f = document.getElementById('frequenciaPercentual').value;
+        if (f === '' || f < 0 || f > 100) { showToast('Informe a frequência (0-100%).', 'error'); return false; }
+    }
+    if (s === 3) {
+        const m = document.getElementById('mediaGeral').value;
+        if (m === '' || m < 0 || m > 10) { showToast('Informe a média (0-10).', 'error'); return false; }
+    }
+    return true;
+}
+
+/* ═══ COLETA ═══ */
+function coletar(s) {
+    if (s === 1) {
+        dados.nome = document.getElementById('nomeAluno').value;
+        dados.anoSerie = document.getElementById('anoSerie').value;
+        dados.turno = document.getElementById('turno').value;
+        dados.idade = +document.getElementById('idade').value;
+        dados.periodoAnalise = +document.getElementById('periodoAnalise').value || 8;
+    }
+    if (s === 2) {
+        dados.frequenciaPercentual = +document.getElementById('frequenciaPercentual').value;
+        dados.totalFaltas = +document.getElementById('totalFaltas').value || 0;
+        dados.padraoFaltas = document.getElementById('padraoFaltas').value;
+        dados.horariosFaltas = [...document.querySelectorAll('input[name="horarios"]:checked')].map(c => c.value);
+    }
+    if (s === 3) {
+        dados.mediaGeral = +document.getElementById('mediaGeral').value;
+        dados.tendenciaNotas = document.getElementById('tendenciaNotas').value;
+        dados.dificuldades = [...document.querySelectorAll('input[name="dificuldades"]:checked')].map(c => c.value);
+        dados.participacao = document.getElementById('participacao').value;
+    }
+    if (s === 4) {
+        dados.transporte = document.getElementById('transporte').value;
+        dados.tempoDeslocamento = +document.getElementById('tempoDeslocamento').value || 0;
+        dados.acompanhamento = document.getElementById('acompanhamento').value;
+        dados.situacaoFamiliar = document.getElementById('situacaoFamiliar').value;
+        dados.fatoresRisco = [...document.querySelectorAll('input[name="fatores_risco"]:checked')].map(c => c.value);
+    }
+}
+
+/* ═══ BARRA FREQUÊNCIA ═══ */
+document.getElementById('frequenciaPercentual').addEventListener('input', function () {
+    const v = this.value;
+    document.getElementById('freqLbl').textContent = v + '%';
+    const bar = document.getElementById('freqBar');
+    bar.style.width = v + '%';
+    bar.style.backgroundColor = v >= 80 ? '#10B981' : v >= 60 ? '#F59E0B' : '#EF4444';
+});
+
+/* ═══ ANÁLISE ═══ */
+function gerarAnalise() {
+    coletar(4);
+    const res = determinarPerfil(dados);
+    const risco = calcularNivelRisco(dados);
+    const fatores = calcularFatores(dados);
+    const perfil = PERFIS[res.key];
+
+    dados.analise = { perfilKey: res.key, nivelRisco: risco.nivel, riscoHex: risco.hex, riscoPct: risco.pct, pontos: res.pontos };
+
+    document.getElementById('resultArea').innerHTML = `
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+        <div class="border rounded-lg p-5">
+            <h4 class="font-semibold text-gray-800 mb-3">Perfil Identificado</h4>
+            <div class="p-4 rounded-lg text-center mb-3" style="background:${perfil.hex}15">
+                <i class="${perfil.icone} text-4xl mb-2 block" style="color:${perfil.hex}"></i>
+                <h5 class="font-bold text-lg text-gray-800">${perfil.nome}</h5>
+                <p class="text-xs text-gray-600 mt-1">${perfil.descricao}</p>
+            </div>
+            <div class="flex justify-between items-center mt-3">
+                <span class="text-sm font-medium">Risco:</span>
+                <span class="px-3 py-1 rounded-full text-xs font-bold text-white" style="background:${risco.hex}">${risco.nivel}</span>
+            </div>
+            <div class="h-2 bg-gray-200 rounded-full mt-2"><div class="h-full rounded-full" style="width:${risco.pct}%;background:${risco.hex}"></div></div>
+            <div class="mt-4 text-sm text-gray-600 space-y-1">
+                <p><i class="fas fa-user mr-2"></i>${dados.nome || 'Não informado'}</p>
+                <p><i class="fas fa-school mr-2"></i>${formatAno(dados.anoSerie)} — ${formatTurno(dados.turno)}</p>
+                <p><i class="fas fa-chart-line mr-2"></i>Freq: ${dados.frequenciaPercentual}% | Média: ${dados.mediaGeral}</p>
+            </div>
+        </div>
+        <div class="lg:col-span-2 border rounded-lg p-5">
+            <h4 class="font-semibold text-gray-800 mb-3">Fatores de Influência</h4>
+            <div class="h-64"><canvas id="chartRadar"></canvas></div>
+        </div>
+    </div>
+    <h4 class="font-semibold text-gray-800 mb-3">Plano de Ações</h4>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        ${perfil.acoes.map(a => `
+            <div class="action-card bg-white p-4 rounded-lg shadow-sm" style="border-left-color:${perfil.hex}">
+                <span class="text-xs font-bold px-2 py-0.5 rounded" style="background:${perfil.hex}20;color:${perfil.hex}">${a.tipo}</span>
+                <h5 class="font-bold text-gray-800 mt-1 text-sm">${a.titulo}</h5>
+                <p class="text-xs text-gray-600 mt-1 mb-3">${a.descricao}</p>
+                <div class="text-xs text-gray-500 space-y-1">
+                    <p><i class="fas fa-user-tie mr-1" style="color:${perfil.hex}"></i><b>Resp.:</b> ${a.responsavel}</p>
+                    <p><i class="fas fa-calendar-alt mr-1" style="color:${perfil.hex}"></i><b>Prazo:</b> ${a.prazo}</p>
+                    <p><i class="fas fa-tools mr-1" style="color:${perfil.hex}"></i><b>Recursos:</b> ${a.recursos}</p>
+                </div>
+            </div>`).join('')}
+    </div>
+    <div class="bg-gray-50 border rounded-lg p-5 mb-6">
+        <h4 class="font-semibold text-gray-800 mb-3">Monitoramento</h4>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+            <div class="bg-white p-3 rounded border"><h5 class="text-xs font-semibold text-blue-800 mb-1"><i class="fas fa-calendar-check mr-1"></i>Frequência</h5><ul class="text-xs text-gray-600 space-y-1"><li>✓ Checagem diária</li><li>✓ Contato semanal família</li><li>✓ Relatório quinzenal</li></ul></div>
+            <div class="bg-white p-3 rounded border"><h5 class="text-xs font-semibold text-green-800 mb-1"><i class="fas fa-chart-line mr-1"></i>Resultados</h5><ul class="text-xs text-gray-600 space-y-1"><li>✓ Reavaliação 15 dias</li><li>✓ Ajuste se necessário</li><li>✓ Meta: +15% freq. 30d</li></ul></div>
+            <div class="bg-white p-3 rounded border"><h5 class="text-xs font-semibold text-purple-800 mb-1"><i class="fas fa-users mr-1"></i>Equipe</h5><ul class="text-xs text-gray-600 space-y-1"><li>✓ Reuniões semanais</li><li>✓ Comunicação família-escola</li><li>✓ Rede de apoio</li></ul></div>
+        </div>
+        <div class="p-3 bg-blue-50 rounded grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+            <div><div class="text-xl font-bold text-blue-700">${Math.min(dados.frequenciaPercentual + 15, 100)}%</div><div class="text-[11px] text-gray-600">Meta freq.</div></div>
+            <div><div class="text-xl font-bold text-green-700">${Math.min((dados.mediaGeral || 0) + 1, 10).toFixed(1)}</div><div class="text-[11px] text-gray-600">Meta média</div></div>
+            <div><div class="text-xl font-bold text-purple-700">80%</div><div class="text-[11px] text-gray-600">Redução faltas</div></div>
+            <div><div class="text-xl font-bold text-yellow-700">4</div><div class="text-[11px] text-gray-600">Encontros família</div></div>
+        </div>
+    </div>
+    <div class="flex flex-wrap gap-3 justify-end">
+        ${editId ? `<a href="relatorio.html?id=${editId}" class="px-5 py-2 border rounded-md text-gray-700 hover:bg-gray-100 text-sm"><i class="fas fa-eye mr-1"></i>Ver Relatório</a>` : ''}
+        <button onclick="salvarAluno()" class="px-6 py-2 bg-[#005CA9] text-white rounded-md hover:bg-[#004a87] text-sm font-semibold">
+            <i class="fas fa-save mr-2"></i>${editId ? 'Atualizar' : 'Salvar no Sistema'}
+        </button>
+    </div>`;
+
+    setTimeout(() => {
+        const ctx = document.getElementById('chartRadar');
+        if (ctx && typeof Chart !== 'undefined') {
+            if (chartFatores) chartFatores.destroy();
+            chartFatores = new Chart(ctx.getContext('2d'), {
+                type: 'radar',
+                data: {
+                    labels: fatores.map(f => f.nome),
+                    datasets: [{ data: fatores.map(f => f.valor), backgroundColor: 'rgba(204,0,0,0.12)', borderColor: '#CC0000', borderWidth: 2, pointBackgroundColor: fatores.map(f => f.cor), pointBorderColor: '#fff', pointBorderWidth: 2 }]
+                },
+                options: { scales: { r: { beginAtZero: true, max: 100, ticks: { stepSize: 20, callback: v => v + '%' } } }, plugins: { legend: { display: false } } }
+            });
+        }
+    }, 150);
+
+    document.getElementById('btnNext').classList.add('hidden');
+}
+
+/* ═══ SALVAR ═══ */
+function salvarAluno() {
+    const payload = { ...dados, status: 'em_analise' };
+    if (editId) {
+        DB.update(editId, payload);
+        showToast('Registro atualizado!');
+        setTimeout(() => location.href = `relatorio.html?id=${editId}`, 800);
+    } else {
+        const novo = DB.create(payload);
+        showToast('Aluno cadastrado!');
+        setTimeout(() => location.href = `relatorio.html?id=${novo.id}`, 800);
+    }
+}
+
+/* ═══ EDIT MODE ═══ */
+function loadEditData() {
+    if (!editId) return;
+    const d = DB.getById(editId);
+    if (!d) { showToast('Aluno não encontrado', 'error'); return; }
+
+    dados = d;
+    document.getElementById('subTitle').textContent = 'Editando Registro — URE Caieiras 2026';
+    document.getElementById('nomeAluno').value = d.nome || '';
+    document.getElementById('anoSerie').value = d.anoSerie || '';
+    document.getElementById('turno').value = d.turno || '';
+    document.getElementById('idade').value = d.idade || '';
+    document.getElementById('periodoAnalise').value = d.periodoAnalise || 8;
+    document.getElementById('frequenciaPercentual').value = d.frequenciaPercentual ?? '';
+    document.getElementById('totalFaltas').value = d.totalFaltas || '';
+    document.getElementById('padraoFaltas').value = d.padraoFaltas || 'esporadico';
+    (d.horariosFaltas || []).forEach(v => { const cb = document.querySelector(`input[name="horarios"][value="${v}"]`); if (cb) cb.checked = true; });
+    document.getElementById('mediaGeral').value = d.mediaGeral ?? '';
+    document.getElementById('tendenciaNotas').value = d.tendenciaNotas || 'estavel';
+    (d.dificuldades || []).forEach(v => { const cb = document.querySelector(`input[name="dificuldades"][value="${v}"]`); if (cb) cb.checked = true; });
+    document.getElementById('participacao').value = d.participacao || 'moderada';
+    document.getElementById('transporte').value = d.transporte || 'transporte_publico';
+    document.getElementById('tempoDeslocamento').value = d.tempoDeslocamento || '';
+    document.getElementById('acompanhamento').value = d.acompanhamento || 'regular';
+    document.getElementById('situacaoFamiliar').value = d.situacaoFamiliar || 'estavel';
+    (d.fatoresRisco || []).forEach(v => { const cb = document.querySelector(`input[name="fatores_risco"][value="${v}"]`); if (cb) cb.checked = true; });
+
+    document.getElementById('frequenciaPercentual').dispatchEvent(new Event('input'));
+}
+
+document.addEventListener('DOMContentLoaded', () => { showStep(1); loadEditData(); });
+</script>
+</body>
+</html>
