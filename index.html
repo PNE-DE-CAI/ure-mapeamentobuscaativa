@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URE Caieiras 2026 — Mapeamento de Alunos Faltosos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto', sans-serif; }
+        .sed-gradient { background: linear-gradient(135deg, #005CA9 0%, #CC0000 100%); }
+        .fade-in { animation: fadeUp .4s ease forwards; opacity: 0; }
+        @keyframes fadeUp { to { opacity:1; transform:translateY(0); } from { opacity:0; transform:translateY(14px); } }
+        .dot { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; transition:all .3s; }
+        .dot.active { background:#CC0000; color:#fff; transform:scale(1.1); }
+        .dot.done { background:#10B981; color:#fff; }
+        .dot.idle { background:#E5E7EB; color:#9CA3AF; }
+        .action-card { border-left: 4px solid; transition: transform .2s; }
+        .action-card:hover { transform: translateX(4px); }
+        .card-hover { transition: transform .3s, box-shadow .3s; }
+        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,.12); }
+        .page { display: none; }
+        .page.active { display: block; }
+        @media print { .no-print { display:none!important; } }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║  HEADER (visível em todas as telas)                  ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<header class="sed-gradient text-white shadow-lg relative">
+    <div class="absolute top-3 right-4 bg-red-700 px-3 py-1 rounded-full text-xs font-bold">2026</div>
+    <div class="container mx-auto px-4 py-4">
+        <div class="flex flex-col md:flex-row items-center justify-between">
+            <div class="flex items-center mb-3 md:mb-0 cursor-pointer" onclick="navigate('home')">
+                <img src="https://i.ibb.co/dscRg9Ms/LOGO-URE-CAIEIRAS-2-1.png" alt="Logo URE" class="h-14 mr-4" onerror="this.style.display='none'">
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold">URE Caieiras</h1>
+                    <p class="text-sm opacity-90">Mapeamento de Alunos Faltosos</p>
+                </div>
+            </div>
+            <nav class="flex space-x-4 text-sm" id="mainNav">
+                <a href="#" onclick="navigate('home');return false" class="hover:text-yellow-300 transition" data-page="home"><i class="fas fa-home mr-1"></i>Início</a>
+                <a href="#" onclick="navigate('lista');return false" class="hover:text-yellow-300 transition" data-page="lista"><i class="fas fa-chart-pie mr-1"></i>Painel</a>
+                <a href="#" onclick="navigate('cadastro');return false" class="hover:text-yellow-300 transition" data-page="cadastro"><i class="fas fa-plus-circle mr-1"></i>Novo</a>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║  PÁGINA: HOME                                        ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<div id="page-home" class="page">
+    <section class="text-white py-20 relative overflow-hidden" style="background:linear-gradient(135deg,#003366 0%,#005CA9 40%,#CC0000 100%)">
+        <div class="absolute inset-0" style="background:url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%23ffffff&quot; fill-opacity=&quot;0.04&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"></div>
+        <div class="container mx-auto px-4 text-center relative z-10 fade-in">
+            <img src="https://i.ibb.co/dscRg9Ms/LOGO-URE-CAIEIRAS-2-1.png" alt="Logo" class="h-24 mx-auto mb-6 drop-shadow-lg" onerror="this.style.display='none'">
+            <h2 class="text-3xl md:text-5xl font-bold mb-4">Mapeamento de Alunos Faltosos</h2>
+            <p class="text-lg md:text-xl opacity-90 max-w-2xl mx-auto mb-8">Sistema de análise multivariada para identificação, acompanhamento e prevenção da evasão escolar</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="navigate('lista')" class="px-8 py-3 bg-white text-[#003366] font-bold rounded-lg hover:bg-yellow-300 transition shadow-lg"><i class="fas fa-chart-pie mr-2"></i>Abrir Painel</button>
+                <button onclick="navigate('cadastro')" class="px-8 py-3 bg-[#CC0000] text-white font-bold rounded-lg hover:bg-red-700 transition shadow-lg"><i class="fas fa-plus-circle mr-2"></i>Cadastrar Aluno</button>
+            </div>
+        </div>
+    </section>
+    <section class="container mx-auto px-4 py-16">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div class="bg-white rounded-xl shadow-lg p-8 text-center card-hover fade-in">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-search text-3xl text-[#005CA9]"></i></div>
+                <h3 class="font-bold text-lg text-gray-800 mb-2">Identificar</h3>
+                <p class="text-gray-600 text-sm">Mapeamento multivariado de fatores acadêmicos, familiares e socioeconômicos.</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-8 text-center card-hover fade-in" style="animation-delay:.15s">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-clipboard-list text-3xl text-[#CC0000]"></i></div>
+                <h3 class="font-bold text-lg text-gray-800 mb-2">Planejar</h3>
+                <p class="text-gray-600 text-sm">Plano de ações personalizado com responsáveis, prazos e recursos definidos.</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-8 text-center card-hover fade-in" style="animation-delay:.3s">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-chart-line text-3xl text-green-700"></i></div>
+                <h3 class="font-bold text-lg text-gray-800 mb-2">Monitorar</h3>
+                <p class="text-gray-600 text-sm">Acompanhamento contínuo com indicadores de sucesso e reavaliação periódica.</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║  PÁGINA: PAINEL / LISTA                              ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<div id="page-lista" class="page">
+    <main class="container mx-auto px-4 py-8">
+        <div id="statsCards" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"></div>
+        <div class="bg-white rounded-lg shadow p-4 mb-6 flex flex-wrap gap-3 items-end">
+            <div class="flex-1 min-w-[200px]">
+                <label class="text-xs font-medium text-gray-500 mb-1 block">Buscar por nome</label>
+                <input type="text" id="searchInput" placeholder="Digite o nome..." class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+                <label class="text-xs font-medium text-gray-500 mb-1 block">Status</label>
+                <select id="filterStatus" class="px-3 py-2 border rounded-md text-sm"><option value="">Todos</option><option value="em_analise">Em Análise</option><option value="em_acompanhamento">Em Acompanhamento</option><option value="resolvido">Resolvido</option></select>
+            </div>
+            <div>
+                <label class="text-xs font-medium text-gray-500 mb-1 block">Risco</label>
+                <select id="filterRisco" class="px-3 py-2 border rounded-md text-sm"><option value="">Todos</option><option value="CRÍTICO">Crítico</option><option value="ALTO">Alto</option><option value="MÉDIO">Médio</option><option value="BAIXO">Baixo</option></select>
+            </div>
+            <button onclick="renderLista()" class="px-4 py-2 bg-[#005CA9] text-white rounded-md text-sm hover:bg-[#004a87] transition"><i class="fas fa-sync-alt mr-1"></i>Atualizar</button>
+            <div class="flex gap-2 ml-auto">
+                <button onclick="exportBackup()" class="px-3 py-2 border rounded-md text-sm text-gray-600 hover:bg-gray-50" title="Exportar backup"><i class="fas fa-download mr-1"></i>Backup</button>
+                <label class="px-3 py-2 border rounded-md text-sm text-gray-600 hover:bg-gray-50 cursor-pointer" title="Importar backup"><i class="fas fa-upload mr-1"></i>Importar<input type="file" accept=".json" class="hidden" onchange="importBackup(this)"></label>
+            </div>
+        </div>
+        <div id="alunosGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <div id="emptyState" class="hidden text-center py-16">
+            <i class="fas fa-users-slash text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl text-gray-500 font-medium">Nenhum aluno encontrado</h3>
+            <p class="text-gray-400 mt-2 mb-6">Comece cadastrando um aluno</p>
+            <button onclick="navigate('cadastro')" class="px-6 py-2.5 bg-[#CC0000] text-white rounded-md hover:bg-[#a30000] transition"><i class="fas fa-plus mr-2"></i>Cadastrar Aluno</button>
+        </div>
+    </main>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║  PÁGINA: CADASTRO / EDIÇÃO                           ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<div id="page-cadastro" class="page">
+    <main class="container mx-auto px-4 py-8 max-w-4xl">
+        <div class="mb-8">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-lg font-semibold text-gray-800">Formulário de Mapeamento</h2>
+                <span class="text-sm text-gray-500" id="progLabel">Passo 1 de 5</span>
+            </div>
+            <div class="h-2 bg-gray-200 rounded-full overflow-hidden"><div id="progBar" class="h-full bg-[#CC0000] rounded-full transition-all duration-500" style="width:20%"></div></div>
+            <div class="flex justify-between mt-4">
+                <div class="flex flex-col items-center"><div class="dot active" id="dot1">1</div><span class="text-[11px] mt-1 font-medium text-gray-600">Dados</span></div>
+                <div class="flex flex-col items-center"><div class="dot idle" id="dot2">2</div><span class="text-[11px] mt-1 font-medium text-gray-600">Frequência</span></div>
+                <div class="flex flex-col items-center"><div class="dot idle" id="dot3">3</div><span class="text-[11px] mt-1 font-medium text-gray-600">Acadêmico</span></div>
+                <div class="flex flex-col items-center"><div class="dot idle" id="dot4">4</div><span class="text-[11px] mt-1 font-medium text-gray-600">Sociofamiliar</span></div>
+                <div class="flex flex-col items-center"><div class="dot idle" id="dot5">5</div><span class="text-[11px] mt-1 font-medium text-gray-600">Resultados</span></div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- STEP 1 -->
+            <div id="step1" class="p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-6"><i class="fas fa-user mr-2 text-[#005CA9]"></i>1. Dados Gerais</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Nome do Aluno</label><input type="text" id="nomeAluno" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Ano/Série *</label><select id="anoSerie" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"><option value="">Selecione</option><option value="1anoEF">1º Ano EF</option><option value="2anoEF">2º Ano EF</option><option value="3anoEF">3º Ano EF</option><option value="4anoEF">4º Ano EF</option><option value="5anoEF">5º Ano EF</option><option value="6anoEF">6º Ano EF</option><option value="7anoEF">7º Ano EF</option><option value="8anoEF">8º Ano EF</option><option value="9anoEF">9º Ano EF</option><option value="1anoEM">1º Ano EM</option><option value="2anoEM">2º Ano EM</option><option value="3anoEM">3º Ano EM</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Turno *</label><select id="turno" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"><option value="">Selecione</option><option value="manha">Manhã</option><option value="tarde">Tarde</option><option value="noite">Noite</option><option value="integral">Integral</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Idade *</label><input type="number" id="idade" min="5" max="25" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"></div>
+                </div>
+                <div class="mt-5"><label class="block text-sm font-medium text-gray-700 mb-1">Período de Análise (semanas)</label><input type="number" id="periodoAnalise" value="8" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"></div>
+            </div>
+            <!-- STEP 2 -->
+            <div id="step2" class="p-6 hidden">
+                <h3 class="text-xl font-semibold text-gray-800 mb-6"><i class="fas fa-chart-line mr-2 text-blue-600"></i>2. Análise de Frequência</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                    <div class="bg-blue-50 p-4 rounded-lg"><label class="block text-sm font-medium text-gray-700 mb-1">% de Frequência</label><input type="number" id="frequenciaPercentual" min="0" max="100" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"><div class="mt-2"><div class="flex justify-between text-xs"><span>0%</span><span id="freqLbl">—</span><span>100%</span></div><div class="h-2 bg-gray-300 rounded-full mt-1"><div id="freqBar" class="h-full rounded-full transition-all"></div></div></div></div>
+                    <div class="bg-red-50 p-4 rounded-lg"><label class="block text-sm font-medium text-gray-700 mb-1">Total de Faltas</label><input type="number" id="totalFaltas" min="0" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"></div>
+                    <div class="bg-yellow-50 p-4 rounded-lg"><label class="block text-sm font-medium text-gray-700 mb-1">Padrão de Faltas</label><select id="padraoFaltas" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"><option value="esporadico">Esporádicas</option><option value="seguidos">Dias consecutivos</option><option value="especificos">Dias específicos</option><option value="aumentando">Aumentando</option></select></div>
+                </div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Horários com maior absenteísmo:</label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <label class="flex items-center text-sm"><input type="checkbox" name="horarios" value="primeiras" class="mr-2">Primeiras aulas</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="horarios" value="ultimas" class="mr-2">Últimas aulas</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="horarios" value="posrecreio" class="mr-2">Pós-recreio</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="horarios" value="todos" class="mr-2">Todos</label>
+                </div>
+            </div>
+            <!-- STEP 3 -->
+            <div id="step3" class="p-6 hidden">
+                <h3 class="text-xl font-semibold text-gray-800 mb-6"><i class="fas fa-graduation-cap mr-2 text-green-600"></i>3. Desempenho Acadêmico</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Média Geral (0-10)</label><input type="number" id="mediaGeral" min="0" max="10" step="0.1" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Tendência de Notas</label><select id="tendenciaNotas" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"><option value="melhorando">Melhorando</option><option value="estavel">Estável</option><option value="piorando">Piorando</option><option value="instavel">Oscilante</option></select></div>
+                </div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Disciplinas com maior dificuldade (até 3):</label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                    <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="matematica" class="mr-2">Matemática</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="portugues" class="mr-2">Português</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="ciencias" class="mr-2">Ciências</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="historia" class="mr-2">História</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="geografia" class="mr-2">Geografia</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="ingles" class="mr-2">Inglês</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="educacaofisica" class="mr-2">Ed. Física</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="dificuldades" value="artes" class="mr-2">Artes</label>
+                </div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Participação em Sala</label><select id="participacao" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"><option value="ativa">Ativa</option><option value="moderada">Moderada</option><option value="passiva">Passiva</option><option value="isolada">Isolada</option></select></div>
+            </div>
+            <!-- STEP 4 -->
+            <div id="step4" class="p-6 hidden">
+                <h3 class="text-xl font-semibold text-gray-800 mb-6"><i class="fas fa-home mr-2 text-purple-600"></i>4. Contexto Sociofamiliar</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Transporte</label><select id="transporte" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"><option value="transporte_publico">Transporte Público</option><option value="a_pe">A Pé</option><option value="bicicleta">Bicicleta</option><option value="carro_familiar">Carro Familiar</option><option value="escolar">Ônibus Escolar</option><option value="outros">Outros</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Deslocamento (min)</label><input type="number" id="tempoDeslocamento" min="0" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Acompanhamento Familiar</label><select id="acompanhamento" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"><option value="intenso">Intenso (diário)</option><option value="regular">Regular (semanal)</option><option value="esporadico">Esporádico (mensal)</option><option value="inexistente">Inexistente</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Situação Familiar</label><select id="situacaoFamiliar" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#CC0000] outline-none"><option value="estavel">Estável</option><option value="separacao">Separação/Divórcio</option><option value="mudanca">Mudança Recente</option><option value="problemas_saude">Problemas de Saúde</option><option value="outros">Outras Situações</option></select></div>
+                </div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Fatores de Risco Adicionais:</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="trabalho" class="mr-2">Trabalho fora do horário</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="cuidado" class="mr-2">Cuidado de familiares</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="saude" class="mr-2">Problemas de saúde física</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="mental" class="mr-2">Problemas de saúde mental</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="material" class="mr-2">Falta de material escolar</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="alimentacao" class="mr-2">Problemas de alimentação</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="bullying" class="mr-2">Relatos de bullying</label>
+                    <label class="flex items-center text-sm"><input type="checkbox" name="fatores_risco" value="drogas" class="mr-2">Env. com ilícitos</label>
+                </div>
+            </div>
+            <!-- STEP 5 -->
+            <div id="step5" class="p-6 hidden">
+                <h3 class="text-xl font-semibold text-gray-800 mb-6"><i class="fas fa-chart-bar mr-2 text-[#CC0000]"></i>5. Análise e Plano de Ações</h3>
+                <div id="resultArea"><div class="text-center py-12 text-gray-400"><i class="fas fa-clipboard-check text-5xl mb-3"></i><p>Preencha as etapas e clique em "Gerar Análise"</p></div></div>
+            </div>
+            <!-- NAV -->
+            <div class="p-5 border-t bg-gray-50 flex justify-between">
+                <button id="btnPrev" onclick="prevStep()" class="px-5 py-2 border rounded-md text-gray-700 hover:bg-gray-100 hidden"><i class="fas fa-arrow-left mr-2"></i>Anterior</button>
+                <button id="btnNext" onclick="nextStep()" class="ml-auto px-5 py-2 bg-[#CC0000] text-white rounded-md hover:bg-[#a30000] transition">Próximo <i class="fas fa-arrow-right ml-2"></i></button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║  PÁGINA: RELATÓRIO                                   ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<div id="page-relatorio" class="page">
+    <main class="container mx-auto px-4 py-8 max-w-5xl">
+        <div id="relatorioContent">
+            <div class="text-center py-20 text-gray-400"><i class="fas fa-spinner fa-spin text-4xl mb-4"></i><p>Carregando...</p></div>
+        </div>
+    </main>
+</div>
+
+<!-- MODAL EXCLUSÃO -->
+<div id="deleteModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 text-center">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-trash-alt text-3xl text-red-600"></i></div>
+        <h3 class="text-lg font-bold text-gray-800 mb-2">Confirmar Exclusão</h3>
+        <p class="text-gray-500 mb-1">Deseja excluir o registro de</p>
+        <p class="font-bold text-gray-800 text-lg mb-6" id="deleteName"></p>
+        <div class="flex gap-3 justify-center">
+            <button onclick="closeModal()" class="px-6 py-2 border rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
+            <button onclick="confirmDelete()" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Excluir</button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg z-50 text-white opacity-0 transform translate-y-4 transition-all duration-300 pointer-events-none"></div>
+
+<!-- FOOTER -->
+<footer class="bg-gradient-to-r from-blue-900 to-gray-900 text-white py-6 mt-12">
+    <div class="container mx-auto px-4 text-center text-sm text-gray-400">
+        <p>© 2026 URE Caieiras — SEDUC/SP — Sistema de Mapeamento de Faltosos — Resolução SEDUC 39/2023</p>
+    </div>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   DATABASE — localStorage CRUD
+   ═══════════════════════════════════════════════════════════ */
+const DB = {
+    KEY: 'ure_caieiras_2026',
+    _r() { try { return JSON.parse(localStorage.getItem(this.KEY)) || [] } catch { return [] } },
+    _w(d) { localStorage.setItem(this.KEY, JSON.stringify(d)) },
+    _id() { return 'a_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8) },
+    getAll(f = {}) {
+        let a = this._r();
+        if (f.search) { const s = f.search.toLowerCase(); a = a.filter(x => (x.nome||'').toLowerCase().includes(s)) }
+        if (f.status) a = a.filter(x => x.status === f.status);
+        if (f.risco) a = a.filter(x => x.analise && x.analise.nivelRisco === f.risco);
+        return a.sort((x, y) => new Date(y.createdAt) - new Date(x.createdAt));
+    },
+    getById(id) { return this._r().find(a => a.id === id) || null },
+    create(d) { const a = this._r(); const n = { id: this._id(), ...d, status: d.status || 'em_analise', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }; a.push(n); this._w(a); return n },
+    update(id, d) { const a = this._r(); const i = a.findIndex(x => x.id === id); if (i < 0) return null; a[i] = { ...a[i], ...d, id: a[i].id, createdAt: a[i].createdAt, updatedAt: new Date().toISOString() }; this._w(a); return a[i] },
+    updateStatus(id, s) { return this.update(id, { status: s }) },
+    delete(id) { const a = this._r(); const i = a.findIndex(x => x.id === id); if (i < 0) return false; a.splice(i, 1); this._w(a); return true },
+    getStats() {
+        const a = this._r();
+        return { total: a.length, emAnalise: a.filter(x => x.status === 'em_analise').length, emAcompanhamento: a.filter(x => x.status === 'em_acompanhamento').length, resolvido: a.filter(x => x.status === 'resolvido').length, critico: a.filter(x => x.analise && x.analise.nivelRisco === 'CRÍTICO').length, alto: a.filter(x => x.analise && x.analise.nivelRisco === 'ALTO').length };
+    },
+    export() { const d = this._r(); const b = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'backup-ure-' + new Date().toISOString().slice(0, 10) + '.json'; a.click(); URL.revokeObjectURL(u) },
+    import(file) { return new Promise((ok, fail) => { const r = new FileReader(); r.onload = e => { try { const d = JSON.parse(e.target.result); if (!Array.isArray(d)) throw 0; const ex = this._r(); const ids = new Set(ex.map(x => x.id)); const nw = d.filter(x => !ids.has(x.id)); this._w([...ex, ...nw]); ok(nw.length) } catch(err) { fail(err) } }; r.readAsText(file) }) }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   ANÁLISE — Perfis e cálculos
+   ═══════════════════════════════════════════════════════════ */
+const PERFIS = {
+    academico: { nome:"Dificuldades Acadêmicas", desc:"Baixo desempenho que afeta motivação e frequência", ic:"fas fa-graduation-cap", hex:"#2563EB", acoes:[{t:"Imediato",n:"Apoio Pedagógico Individualizado",d:"Tutoria com professor específico para disciplinas de maior dificuldade, 2x por semana.",r:"Coordenador Pedagógico",p:"1 semana",rc:"Sala de apoio, material específico"},{t:"Curto Prazo",n:"Plano de Estudos Personalizado",d:"Plano com metas semanais e acompanhamento do rendimento.",r:"Professor Orientador",p:"2 semanas",rc:"Agenda escolar"},{t:"Médio Prazo",n:"Grupo de Estudos Monitorado",d:"Grupo com colegas para fortalecer aprendizado e socialização.",r:"Professor da Disciplina",p:"3 semanas",rc:"Espaço físico, material colaborativo"}]},
+    transporte: { nome:"Problemas de Transporte", desc:"Dificuldades no trajeto casa-escola", ic:"fas fa-bus", hex:"#D97706", acoes:[{t:"Imediato",n:"Rota Alternativa",d:"Mapear rotas e horários de transporte disponíveis na região.",r:"Serviço Social",p:"3 dias",rc:"Mapas, horários"},{t:"Curto Prazo",n:"Acomp. de Colegas",d:"Organizar sistema com colegas de trajeto similar.",r:"Coordenador de Turma",p:"1 semana",rc:"Lista de endereços"},{t:"Médio Prazo",n:"Transporte Escolar",d:"Solicitar vaga no transporte escolar municipal.",r:"Direção Escolar",p:"2 semanas",rc:"Documentação necessária"}]},
+    familiar: { nome:"Conflitos Familiares", desc:"Situações familiares que impactam frequência", ic:"fas fa-home", hex:"#7C3AED", acoes:[{t:"Imediato",n:"Entrevista com Responsáveis",d:"Reunião com família para entender situação e buscar soluções.",r:"Serviço Social/Pedagogo",p:"5 dias",rc:"Sala de reuniões"},{t:"Curto Prazo",n:"Apoio Psicossocial",d:"Encaminhar para atendimento psicológico.",r:"Coordenador Pedagógico",p:"1 semana",rc:"Rede de apoio"},{t:"Médio Prazo",n:"Acomp. Familiar",d:"Plano com visitas domiciliares e apoio à família.",r:"Serviço Social",p:"3 semanas",rc:"Equipe multidisciplinar"}]},
+    saude: { nome:"Problemas de Saúde", desc:"Questões de saúde física ou mental", ic:"fas fa-heartbeat", hex:"#059669", acoes:[{t:"Imediato",n:"Avaliação de Saúde",d:"Verificar necessidade de adaptações ou atendimentos.",r:"Coordenador",p:"3 dias",rc:"Ficha de saúde"},{t:"Curto Prazo",n:"Plano de Acomodações",d:"Implementar adaptações necessárias.",r:"Coordenador Pedagógico",p:"1 semana",rc:"Plano especializado"},{t:"Médio Prazo",n:"Monitoramento Contínuo",d:"Acompanhamento regular e ajustes.",r:"Equipe Multiprofissional",p:"Contínuo",rc:"Registro de evolução"}]},
+    motivacional: { nome:"Desmotivação Escolar", desc:"Falta de engajamento com a escola", ic:"fas fa-brain", hex:"#DC2626", acoes:[{t:"Imediato",n:"Mentoria",d:"Vínculo com professor como mentor.",r:"Coordenador Pedagógico",p:"1 semana",rc:"Horário para encontros"},{t:"Curto Prazo",n:"Projeto de Interesse",d:"Projeto especial nas áreas de interesse do aluno.",r:"Professor Orientador",p:"2 semanas",rc:"Material para projeto"},{t:"Médio Prazo",n:"Atividades Extracurriculares",d:"Inserir em atividades que despertem interesse.",r:"Coordenador de Projetos",p:"3 semanas",rc:"Oficinas, clubes"}]},
+    multiplos: { nome:"Fatores Múltiplos", desc:"Combinação de vários fatores", ic:"fas fa-layer-group", hex:"#4B5563", acoes:[{t:"Imediato",n:"Plano Integrado",d:"Plano que aborde os principais fatores identificados.",r:"Equipe Multidisciplinar",p:"1 semana",rc:"Reunião de equipe"},{t:"Curto Prazo",n:"Acomp. Intensivo",d:"Monitoramento diário e contato frequente.",r:"Coordenador de Turma",p:"2 semanas",rc:"Registro diário"},{t:"Médio Prazo",n:"Rede de Apoio",d:"Articular saúde, assistência social, etc.",r:"Direção Escolar",p:"3 semanas",rc:"Contatos intersetoriais"}]}
+};
+
+function analisarPerfil(d) {
+    let p = {academico:0,transporte:0,familiar:0,saude:0,motivacional:0};
+    if(d.frequenciaPercentual<60) p.academico+=3;
+    if(d.frequenciaPercentual<70) p.motivacional+=2;
+    if(d.padraoFaltas==='especificos') p.transporte+=2;
+    if(d.padraoFaltas==='seguidos') p.saude+=2;
+    if(d.padraoFaltas==='aumentando') p.motivacional+=2;
+    if(d.mediaGeral<6) p.academico+=3;
+    if(d.tendenciaNotas==='piorando') p.academico+=2;
+    if(d.dificuldades&&d.dificuldades.length>2) p.academico+=2;
+    if(d.transporte==='a_pe'&&d.tempoDeslocamento>30) p.transporte+=3;
+    if(d.transporte==='transporte_publico'&&d.tempoDeslocamento>45) p.transporte+=2;
+    if(d.acompanhamento==='inexistente'||d.acompanhamento==='esporadico') p.familiar+=2;
+    if(d.situacaoFamiliar&&d.situacaoFamiliar!=='estavel') p.familiar+=2;
+    if(d.fatoresRisco) d.fatoresRisco.forEach(f=>{
+        if(['trabalho','cuidado'].includes(f)) p.familiar+=1;
+        if(['saude','mental'].includes(f)) p.saude+=2;
+        if(['bullying','drogas'].includes(f)) p.motivacional+=2;
+        if(['material','alimentacao'].includes(f)) p.familiar+=1;
+    });
+    if(d.participacao==='isolada') p.motivacional+=2;
+    if(d.participacao==='passiva') p.motivacional+=1;
+    let mk='academico',mv=0;
+    for(const[k,v]of Object.entries(p)){if(v>mv){mv=v;mk=k}}
+    const altos=Object.entries(p).filter(([,v])=>v>=mv*0.75&&v>0);
+    return{key:altos.length>2?'multiplos':mk,pontos:p};
+}
+
+function calcRisco(d) {
+    let pts=0;
+    if(d.frequenciaPercentual<50)pts+=3;else if(d.frequenciaPercentual<70)pts+=2;else if(d.frequenciaPercentual<80)pts+=1;
+    if(d.mediaGeral<5)pts+=3;else if(d.mediaGeral<6)pts+=2;else if(d.mediaGeral<7)pts+=1;
+    if(d.fatoresRisco)pts+=Math.min(d.fatoresRisco.length,3);
+    if(d.acompanhamento==='inexistente')pts+=2;
+    if(d.situacaoFamiliar&&d.situacaoFamiliar!=='estavel')pts+=1;
+    if(pts>=8)return{nivel:'CRÍTICO',hex:'#7F1D1D',pct:100};
+    if(pts>=6)return{nivel:'ALTO',hex:'#EF4444',pct:75};
+    if(pts>=4)return{nivel:'MÉDIO',hex:'#F59E0B',pct:50};
+    return{nivel:'BAIXO',hex:'#10B981',pct:25};
+}
+
+function calcFatores(d) {
+    return[
+       {nome:'Frequência',v:d.frequenciaPercentual||0,c:'#3B82F6'},
+       {nome:'Desempenho',v:(d.mediaGeral||0)*10,c:'#10B981'},
+       {nome:'Transporte',v:d.tempoDeslocamento>30?80:30,c:'#F59E0B'},
+       {nome:'Acomp. Familiar',v:({intenso:20,regular:40,esporadico:70,inexistente:90})[d.acompanhamento]||50,c:'#8B5CF6'},
+       {nome:'Fatores Risco',v:Math.min((d.fatoresRisco?.length||0)*20,100),c:'#EF4444'}
+    ];
+}
+
+// Formatters
+const fmt = {
+    ano: v=>({'1anoEF':'1º EF','2anoEF':'2º EF','3anoEF':'3º EF','4anoEF':'4º EF','5anoEF':'5º EF','6anoEF':'6º EF','7anoEF':'7º EF','8anoEF':'8º EF','9anoEF':'9º EF','1anoEM':'1º EM','2anoEM':'2º EM','3anoEM':'3º EM'})[v]||v||'—',
+    turno: v=>({manha:'Manhã',tarde:'Tarde',noite:'Noite',integral:'Integral'})[v]||v||'—',
+    padrao: v=>({esporadico:'Esporádicas',seguidos:'Dias consecutivos',especificos:'Dias específicos',aumentando:'Progressivas'})[v]||v||'—',
+    tendencia: v=>({melhorando:'Melhorando',estavel:'Estável',piorando:'Piorando',instavel:'Oscilante'})[v]||v||'—',
+    participacao: v=>({ativa:'Ativa',moderada:'Moderada',passiva:'Passiva',isolada:'Isolada'})[v]||v||'—',
+    transporte: v=>({transporte_publico:'Transporte Público',a_pe:'A pé',bicicleta:'Bicicleta',carro_familiar:'Carro Familiar',escolar:'Ônibus Escolar',outros:'Outros'})[v]||v||'—',
+    acomp: v=>({intenso:'Intenso (diário)',regular:'Regular (semanal)',esporadico:'Esporádico (mensal)',inexistente:'Inexistente'})[v]||v||'—',
+    sit: v=>({estavel:'Estável',separacao:'Separação/Divórcio',mudanca:'Mudança Recente',problemas_saude:'Problemas de Saúde',outros:'Outras Situações'})[v]||v||'—',
+    status: v=>({em_analise:'Em Análise',em_acompanhamento:'Em Acompanhamento',resolvido:'Resolvido'})[v]||'Em Análise'
+};
+
+/* ═══════════════════════════════════════════════════════════
+   UI — Toast, Navegação
+   ═══════════════════════════════════════════════════════════ */
+function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg z-50 text-white transition-all duration-300 ${type==='success'?'bg-green-600':'bg-red-600'}`;
+    t.style.opacity = '1'; t.style.transform = 'translateY(0)';
+    setTimeout(()=>{t.style.opacity='0';t.style.transform='translateY(16px)'}, 3500);
+}
+
+let currentPage = 'home';
+let editId = null;
+let formDados = {};
+let formStep = 1;
+let chartInst = null;
+
+function navigate(page, params) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    currentPage = page;
+
+    // Nav highlight
+    document.querySelectorAll('#mainNav a').forEach(a => {
+        a.classList.toggle('text-yellow-300', a.dataset.page === page);
+        a.classList.toggle('font-semibold', a.dataset.page === page);
+    });
+
+    window.scrollTo(0, 0);
+
+    if (page === 'lista') renderLista();
+    if (page === 'cadastro') {
+        editId = params?.editId || null;
+        resetForm();
+        if (editId) loadEditData();
+    }
+    if (page === 'relatorio') renderRelatorio(params?.id);
+}
+
+function debounce(fn, ms) { let t; return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)} }
+
+/* ═══════════════════════════════════════════════════════════
+   LISTA
+   ═══════════════════════════════════════════════════════════ */
+function renderLista() {
+    const f = { search: document.getElementById('searchInput').value, status: document.getElementById('filterStatus').value, risco: document.getElementById('filterRisco').value };
+    const alunos = DB.getAll(f);
+    const s = DB.getStats();
+
+    document.getElementById('statsCards').innerHTML = `
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-[#005CA9] fade-in"><div class="text-3xl font-bold text-[#003366]">${s.total}</div><div class="text-sm text-gray-500">Total</div></div>
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-yellow-500 fade-in" style="animation-delay:.08s"><div class="text-3xl font-bold text-yellow-600">${s.emAnalise+s.emAcompanhamento}</div><div class="text-sm text-gray-500">Acompanhamento</div></div>
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-[#CC0000] fade-in" style="animation-delay:.16s"><div class="text-3xl font-bold text-[#CC0000]">${s.critico+s.alto}</div><div class="text-sm text-gray-500">Risco Alto/Crítico</div></div>
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-green-600 fade-in" style="animation-delay:.24s"><div class="text-3xl font-bold text-green-700">${s.resolvido}</div><div class="text-sm text-gray-500">Resolvidos</div></div>`;
+
+    const grid = document.getElementById('alunosGrid');
+    const empty = document.getElementById('emptyState');
+    if (!alunos.length) { grid.innerHTML = ''; empty.classList.remove('hidden'); return; }
+    empty.classList.add('hidden');
+
+    const rb = {'CRÍTICO':'bg-red-900 text-white','ALTO':'bg-red-500 text-white','MÉDIO':'bg-yellow-400 text-gray-900','BAIXO':'bg-green-500 text-white'};
+    const sb = {em_analise:{l:'Em Análise',c:'bg-blue-100 text-blue-800'},em_acompanhamento:{l:'Em Acompanhamento',c:'bg-yellow-100 text-yellow-800'},resolvido:{l:'Resolvido',c:'bg-green-100 text-green-800'}};
+
+    grid.innerHTML = alunos.map((a,i) => {
+        const r = a.analise?.nivelRisco||'N/D';
+        const pn = a.analise?.perfilKey && PERFIS[a.analise.perfilKey] ? PERFIS[a.analise.perfilKey].nome : 'N/D';
+        const st = sb[a.status]||sb.em_analise;
+        return `<div class="bg-white rounded-lg shadow hover:shadow-lg transition-all fade-in border border-gray-100" style="animation-delay:${i*.03}s"><div class="p-5">
+            <div class="flex justify-between items-start mb-3"><div class="min-w-0 flex-1"><h3 class="font-bold text-gray-800 truncate">${a.nome||'Sem nome'}</h3><p class="text-xs text-gray-500">${fmt.ano(a.anoSerie)} · ${fmt.turno(a.turno)} · ${a.idade||'?'} anos</p></div><span class="text-[11px] px-2 py-1 rounded-full font-bold whitespace-nowrap ml-2 ${rb[r]||'bg-gray-200 text-gray-600'}">${r}</span></div>
+            <div class="flex gap-2 mb-3"><span class="text-[11px] px-2 py-0.5 rounded-full font-medium ${st.c}">${st.l}</span></div>
+            <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-gray-600 mb-4"><span><i class="fas fa-chart-line mr-1 text-blue-500"></i>Freq: ${a.frequenciaPercentual??'—'}%</span><span><i class="fas fa-star mr-1 text-yellow-500"></i>Média: ${a.mediaGeral??'—'}</span><span class="col-span-2"><i class="fas fa-tag mr-1 text-purple-500"></i>${pn}</span></div>
+            <div class="flex gap-2 pt-3 border-t border-gray-100">
+                <button onclick="navigate('relatorio',{id:'${a.id}'})" class="flex-1 py-1.5 bg-blue-50 text-blue-700 rounded text-xs font-medium hover:bg-blue-100 transition"><i class="fas fa-file-alt mr-1"></i>Relatório</button>
+                <button onclick="navigate('cadastro',{editId:'${a.id}'})" class="flex-1 py-1.5 bg-yellow-50 text-yellow-700 rounded text-xs font-medium hover:bg-yellow-100 transition"><i class="fas fa-edit mr-1"></i>Editar</button>
+                <button onclick="openModal('${a.id}','${(a.nome||'').replace(/'/g,"\\'")}')" class="flex-1 py-1.5 bg-red-50 text-red-700 rounded text-xs font-medium hover:bg-red-100 transition"><i class="fas fa-trash mr-1"></i>Excluir</button>
+            </div></div></div>`;
+    }).join('');
+}
+
+let delId = null;
+function openModal(id, nome) { delId = id; document.getElementById('deleteName').textContent = nome; document.getElementById('deleteModal').classList.remove('hidden'); }
+function closeModal() { delId = null; document.getElementById('deleteModal').classList.add('hidden'); }
+function confirmDelete() { if (!delId) return; DB.delete(delId); closeModal(); renderLista(); showToast('Registro excluído'); }
+
+function exportBackup() { DB.export(); showToast('Backup exportado!'); }
+async function importBackup(input) { if (!input.files.length) return; try { const c = await DB.import(input.files[0]); showToast(`${c} registro(s) importado(s)`); renderLista(); } catch { showToast('Arquivo inválido', 'error'); } input.value = ''; }
+
+document.getElementById('searchInput').addEventListener('input', debounce(renderLista, 250));
+document.getElementById('filterStatus').addEventListener('change', renderLista);
+document.getElementById('filterRisco').addEventListener('change', renderLista);
+
+/* ═══════════════════════════════════════════════════════════
+   FORMULÁRIO
+   ═══════════════════════════════════════════════════════════ */
+function resetForm() {
+    formStep = 1; formDados = {};
+    ['nomeAluno','anoSerie','turno','idade','periodoAnalise','frequenciaPercentual','totalFaltas','padraoFaltas','mediaGeral','tendenciaNotas','participacao','transporte','tempoDeslocamento','acompanhamento','situacaoFamiliar'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = el.id === 'periodoAnalise' ? '8' : '';
+    });
+    document.querySelectorAll('#page-cadastro input[type=checkbox]').forEach(c => c.checked = false);
+    document.getElementById('freqLbl').textContent = '—';
+    document.getElementById('freqBar').style.width = '0';
+    document.getElementById('resultArea').innerHTML = '<div class="text-center py-12 text-gray-400"><i class="fas fa-clipboard-check text-5xl mb-3"></i><p>Preencha as etapas e clique em "Gerar Análise"</p></div>';
+    document.getElementById('btnNext').classList.remove('hidden');
+    document.getElementById('btnNext').innerHTML = 'Próximo <i class="fas fa-arrow-right ml-2"></i>';
+    document.getElementById('btnNext').onclick = nextStep;
+    showFormStep(1);
+}
+
+function showFormStep(s) {
+    for (let i = 1; i <= 5; i++) {
+        document.getElementById('step' + i).classList.toggle('hidden', i !== s);
+        const dot = document.getElementById('dot' + i);
+        dot.className = 'dot ' + (i < s ? 'done' : i === s ? 'active' : 'idle');
+    }
+    document.getElementById('progBar').style.width = ((s - 1) / 4 * 100) + '%';
+    document.getElementById('progLabel').textContent = `Passo ${s} de 5`;
+    document.getElementById('btnPrev').classList.toggle('hidden', s === 1);
+    if (s === 5) {
+        document.getElementById('btnNext').innerHTML = 'Gerar Análise <i class="fas fa-chart-bar ml-2"></i>';
+        document.getElementById('btnNext').onclick = gerarAnalise;
+    } else {
+        document.getElementById('btnNext').innerHTML = 'Próximo <i class="fas fa-arrow-right ml-2"></i>';
+        document.getElementById('btnNext').onclick = nextStep;
+    }
+}
+
+function nextStep() { if (!validar(formStep)) return; coletar(formStep); formStep++; showFormStep(formStep); }
+function prevStep() { if (formStep > 1) { formStep--; showFormStep(formStep); } }
+
+function validar(s) {
+    if (s === 1 && (!document.getElementById('anoSerie').value || !document.getElementById('turno').value || !document.getElementById('idade').value)) { showToast('Preencha Ano/Série, Turno e Idade.', 'error'); return false; }
+    if (s === 2) { const f = document.getElementById('frequenciaPercentual').value; if (f === '' || f < 0 || f > 100) { showToast('Informe a frequência (0-100%).', 'error'); return false; } }
+    if (s === 3) { const m = document.getElementById('mediaGeral').value; if (m === '' || m < 0 || m > 10) { showToast('Informe a média (0-10).', 'error'); return false; } }
+    return true;
+}
+
+function coletar(s) {
+    const d = formDados;
+    if (s === 1) { d.nome = document.getElementById('nomeAluno').value; d.anoSerie = document.getElementById('anoSerie').value; d.turno = document.getElementById('turno').value; d.idade = +document.getElementById('idade').value; d.periodoAnalise = +document.getElementById('periodoAnalise').value || 8; }
+    if (s === 2) { d.frequenciaPercentual = +document.getElementById('frequenciaPercentual').value; d.totalFaltas = +document.getElementById('totalFaltas').value || 0; d.padraoFaltas = document.getElementById('padraoFaltas').value; d.horariosFaltas = [...document.querySelectorAll('input[name="horarios"]:checked')].map(c => c.value); }
+    if (s === 3) { d.mediaGeral = +document.getElementById('mediaGeral').value; d.tendenciaNotas = document.getElementById('tendenciaNotas').value; d.dificuldades = [...document.querySelectorAll('input[name="dificuldades"]:checked')].map(c => c.value); d.participacao = document.getElementById('participacao').value; }
+    if (s === 4) { d.transporte = document.getElementById('transporte').value; d.tempoDeslocamento = +document.getElementById('tempoDeslocamento').value || 0; d.acompanhamento = document.getElementById('acompanhamento').value; d.situacaoFamiliar = document.getElementById('situacaoFamiliar').value; d.fatoresRisco = [...document.querySelectorAll('input[name="fatores_risco"]:checked')].map(c => c.value); }
+}
+
+document.getElementById('frequenciaPercentual').addEventListener('input', function () {
+    const v = this.value; document.getElementById('freqLbl').textContent = v + '%';
+    const bar = document.getElementById('freqBar'); bar.style.width = v + '%';
+    bar.style.backgroundColor = v >= 80 ? '#10B981' : v >= 60 ? '#F59E0B' : '#EF4444';
+});
+
+function loadEditData() {
+    const d = DB.getById(editId);
+    if (!d) { showToast('Aluno não encontrado', 'error'); return; }
+    formDados = d;
+    document.getElementById('nomeAluno').value = d.nome || '';
+    document.getElementById('anoSerie').value = d.anoSerie || '';
+    document.getElementById('turno').value = d.turno || '';
+    document.getElementById('idade').value = d.idade || '';
+    document.getElementById('periodoAnalise').value = d.periodoAnalise || 8;
+    document.getElementById('frequenciaPercentual').value = d.frequenciaPercentual ?? '';
+    document.getElementById('totalFaltas').value = d.totalFaltas || '';
+    document.getElementById('padraoFaltas').value = d.padraoFaltas || 'esporadico';
+    (d.horariosFaltas || []).forEach(v => { const cb = document.querySelector(`input[name="horarios"][value="${v}"]`); if (cb) cb.checked = true; });
+    document.getElementById('mediaGeral').value = d.mediaGeral ?? '';
+    document.getElementById('tendenciaNotas').value = d.tendenciaNotas || 'estavel';
+    (d.dificuldades || []).forEach(v => { const cb = document.querySelector(`input[name="dificuldades"][value="${v}"]`); if (cb) cb.checked = true; });
+    document.getElementById('participacao').value = d.participacao || 'moderada';
+    document.getElementById('transporte').value = d.transporte || 'transporte_publico';
+    document.getElementById('tempoDeslocamento').value = d.tempoDeslocamento || '';
+    document.getElementById('acompanhamento').value = d.acompanhamento || 'regular';
+    document.getElementById('situacaoFamiliar').value = d.situacaoFamiliar || 'estavel';
+    (d.fatoresRisco || []).forEach(v => { const cb = document.querySelector(`input[name="fatores_risco"][value="${v}"]`); if (cb) cb.checked = true; });
+    document.getElementById('frequenciaPercentual').dispatchEvent(new Event('input'));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GERAR ANÁLISE
+   ═══════════════════════════════════════════════════════════ */
+function gerarAnalise() {
+    coletar(4);
+    const d = formDados;
+    const res = analisarPerfil(d);
+    const risco = calcRisco(d);
+    const fatores = calcFatores(d);
+    const p = PERFIS[res.key];
+    d.analise = { perfilKey: res.key, nivelRisco: risco.nivel, riscoHex: risco.hex, riscoPct: risco.pct, pontos: res.pontos };
+
+    document.getElementById('resultArea').innerHTML = `
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+        <div class="border rounded-lg p-5"><h4 class="font-semibold text-gray-800 mb-3">Perfil Identificado</h4>
+            <div class="p-4 rounded-lg text-center mb-3" style="background:${p.hex}15"><i class="${p.ic} text-4xl mb-2 block" style="color:${p.hex}"></i><h5 class="font-bold text-lg text-gray-800">${p.nome}</h5><p class="text-xs text-gray-600 mt-1">${p.desc}</p></div>
+            <div class="flex justify-between items-center"><span class="text-sm font-medium">Risco:</span><span class="px-3 py-1 rounded-full text-xs font-bold text-white" style="background:${risco.hex}">${risco.nivel}</span></div>
+            <div class="h-2 bg-gray-200 rounded-full mt-2"><div class="h-full rounded-full" style="width:${risco.pct}%;background:${risco.hex}"></div></div>
+            <div class="mt-3 text-sm text-gray-600 space-y-1"><p><i class="fas fa-user mr-2"></i>${d.nome||'Não informado'}</p><p><i class="fas fa-school mr-2"></i>${fmt.ano(d.anoSerie)} — ${fmt.turno(d.turno)}</p><p><i class="fas fa-chart-line mr-2"></i>Freq: ${d.frequenciaPercentual}% | Média: ${d.mediaGeral}</p></div>
+        </div>
+        <div class="lg:col-span-2 border rounded-lg p-5"><h4 class="font-semibold text-gray-800 mb-3">Fatores de Influência</h4><div class="h-64"><canvas id="chartRadar"></canvas></div></div>
+    </div>
+    <h4 class="font-semibold text-gray-800 mb-3">Plano de Ações</h4>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">${p.acoes.map(a=>`<div class="action-card bg-white p-4 rounded-lg shadow-sm" style="border-left-color:${p.hex}"><span class="text-xs font-bold px-2 py-0.5 rounded" style="background:${p.hex}20;color:${p.hex}">${a.t}</span><h5 class="font-bold text-gray-800 mt-1 text-sm">${a.n}</h5><p class="text-xs text-gray-600 mt-1 mb-3">${a.d}</p><div class="text-xs text-gray-500 space-y-1"><p><i class="fas fa-user-tie mr-1" style="color:${p.hex}"></i><b>Resp.:</b> ${a.r}</p><p><i class="fas fa-calendar-alt mr-1" style="color:${p.hex}"></i><b>Prazo:</b> ${a.p}</p><p><i class="fas fa-tools mr-1" style="color:${p.hex}"></i><b>Recursos:</b> ${a.rc}</p></div></div>`).join('')}</div>
+    <div class="flex flex-wrap gap-3 justify-end">
+        ${editId?`<button onclick="navigate('relatorio',{id:'${editId}'})" class="px-5 py-2 border rounded-md text-gray-700 hover:bg-gray-100 text-sm"><i class="fas fa-eye mr-1"></i>Ver Relatório</button>`:''}
+        <button onclick="salvarAluno()" class="px-6 py-2 bg-[#005CA9] text-white rounded-md hover:bg-[#004a87] text-sm font-semibold"><i class="fas fa-save mr-2"></i>${editId?'Atualizar':'Salvar no Sistema'}</button>
+    </div>`;
+
+    setTimeout(() => {
+        const ctx = document.getElementById('chartRadar');
+        if (ctx && typeof Chart !== 'undefined') {
+            if (chartInst) chartInst.destroy();
+            chartInst = new Chart(ctx.getContext('2d'), {
+                type: 'radar',
+                data: { labels: fatores.map(f => f.nome), datasets: [{ data: fatores.map(f => f.v), backgroundColor: 'rgba(204,0,0,0.12)', borderColor: '#CC0000', borderWidth: 2, pointBackgroundColor: fatores.map(f => f.c), pointBorderColor: '#fff', pointBorderWidth: 2 }] },
+                options: { scales: { r: { beginAtZero: true, max: 100, ticks: { stepSize: 20, callback: v => v + '%' } } }, plugins: { legend: { display: false } } }
+            });
+        }
+    }, 150);
+
+    document.getElementById('btnNext').classList.add('hidden');
+}
+
+function salvarAluno() {
+    const payload = { ...formDados, status: 'em_analise' };
+    if (editId) {
+        DB.update(editId, payload);
+        showToast('Registro atualizado!');
+        setTimeout(() => navigate('relatorio', { id: editId }), 800);
+    } else {
+        const novo = DB.create(payload);
+        showToast('Aluno cadastrado!');
+        setTimeout(() => navigate('relatorio', { id: novo.id }), 800);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RELATÓRIO
+   ═══════════════════════════════════════════════════════════ */
+function renderRelatorio(id) {
+    const el = document.getElementById('relatorioContent');
+    if (!id) { el.innerHTML = '<p class="text-center text-red-500 py-20">ID não informado</p>'; return; }
+    const d = DB.getById(id);
+    if (!d) { el.innerHTML = '<p class="text-center text-red-500 py-20">Aluno não encontrado</p>'; return; }
+
+    const res = analisarPerfil(d);
+    const risco = calcRisco(d);
+    const fatores = calcFatores(d);
+    const p = PERFIS[res.key];
+    document.title = `${d.nome||'Relatório'} — URE Caieiras`;
+
+    const frHtml = (d.fatoresRisco?.length) ? d.fatoresRisco.map(f => { const l={trabalho:'Trabalho',cuidado:'Cuidado',saude:'Saúde física',mental:'Saúde mental',material:'Material',alimentacao:'Alimentação',bullying:'Bullying',drogas:'Ilícitos'}; return `<span class="inline-block px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs mr-1 mb-1">${l[f]||f}</span>` }).join('') : '<span class="text-gray-400 text-sm">Nenhum</span>';
+    const diffHtml = (d.dificuldades?.length) ? d.dificuldades.map(x => { const l={matematica:'Matemática',portugues:'Português',ciencias:'Ciências',historia:'História',geografia:'Geografia',ingles:'Inglês',educacaofisica:'Ed. Física',artes:'Artes'}; return `<span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs mr-1 mb-1">${l[x]||x}</span>` }).join('') : '<span class="text-gray-400 text-sm">Nenhuma</span>';
+    const horariosTxt = (d.horariosFaltas||[]).map(h => ({primeiras:'Primeiras aulas',ultimas:'Últimas aulas',posrecreio:'Pós-recreio',todos:'Todos'})[h]||h).join(', ') || 'Não informado';
+
+    el.innerHTML = `
+    <div class="flex flex-wrap gap-3 mb-6 no-print">
+        <button onclick="navigate('lista')" class="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-100 text-sm"><i class="fas fa-arrow-left mr-2"></i>Painel</button>
+        <button onclick="navigate('cadastro',{editId:'${d.id}'})" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 text-sm"><i class="fas fa-edit mr-2"></i>Editar</button>
+        <button onclick="gerarPDF()" class="px-4 py-2 bg-[#CC0000] text-white rounded-md hover:bg-[#a30000] text-sm"><i class="fas fa-file-pdf mr-2"></i>Baixar PDF</button>
+        <button onclick="window.print()" class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 text-sm"><i class="fas fa-print mr-2"></i>Imprimir</button>
+    </div>
+    <div id="pdfArea">
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-6"><div class="bg-[#003366] text-white p-6"><div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><div><h2 class="text-2xl font-bold">${d.nome||'Não identificado'}</h2><p class="text-sm opacity-80 mt-1">${fmt.ano(d.anoSerie)} · ${fmt.turno(d.turno)} · ${d.idade||'?'} anos · Cadastro: ${new Date(d.createdAt).toLocaleDateString('pt-BR')}</p></div><div class="flex items-center gap-3 flex-wrap"><span class="px-4 py-2 rounded-full text-sm font-bold text-white" style="background:${risco.hex}">Risco ${risco.nivel}</span><select onchange="DB.updateStatus('${d.id}',this.value);showToast('Status: '+fmt.status(this.value))" class="px-3 py-1 border rounded text-sm no-print"><option value="em_analise" ${d.status==='em_analise'?'selected':''}>Em Análise</option><option value="em_acompanhamento" ${d.status==='em_acompanhamento'?'selected':''}>Em Acompanhamento</option><option value="resolvido" ${d.status==='resolvido'?'selected':''}>Resolvido</option></select></div></div></div></div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow p-6"><h3 class="font-semibold text-gray-800 mb-4"><i class="fas fa-fingerprint mr-2" style="color:${p.hex}"></i>Perfil</h3><div class="text-center p-4 rounded-lg mb-4" style="background:${p.hex}15"><i class="${p.ic} text-5xl mb-3 block" style="color:${p.hex}"></i><h4 class="font-bold text-lg text-gray-800">${p.nome}</h4><p class="text-xs text-gray-600 mt-1">${p.desc}</p></div><div class="space-y-2 text-sm"><div class="flex justify-between"><span class="text-gray-500">Frequência:</span><span class="font-bold">${d.frequenciaPercentual??'—'}%</span></div><div class="flex justify-between"><span class="text-gray-500">Média:</span><span class="font-bold">${d.mediaGeral??'—'}</span></div><div class="flex justify-between"><span class="text-gray-500">Faltas:</span><span class="font-bold">${d.totalFaltas??'—'}</span></div><div class="flex justify-between"><span class="text-gray-500">Padrão:</span><span class="font-bold">${fmt.padrao(d.padraoFaltas)}</span></div></div></div>
+            <div class="lg:col-span-2 bg-white rounded-lg shadow p-6"><h3 class="font-semibold text-gray-800 mb-4"><i class="fas fa-chart-area mr-2 text-[#CC0000]"></i>Fatores</h3><div class="h-72"><canvas id="chartRel"></canvas></div></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow p-6"><h3 class="font-semibold text-gray-800 mb-3"><i class="fas fa-chart-line mr-2 text-blue-600"></i>Frequência</h3><div class="space-y-2 text-sm"><div class="flex justify-between border-b pb-2"><span class="text-gray-500">% Frequência:</span><span class="font-medium">${d.frequenciaPercentual??'—'}%</span></div><div class="flex justify-between border-b pb-2"><span class="text-gray-500">Faltas:</span><span class="font-medium">${d.totalFaltas??'—'}</span></div><div class="flex justify-between border-b pb-2"><span class="text-gray-500">Padrão:</span><span class="font-medium">${fmt.padrao(d.padraoFaltas)}</span></div><div class="flex justify-between border-b pb-2"><span class="text-gray-500">Período:</span><span class="font-medium">${d.periodoAnalise||8} sem.</span></div><div><span class="text-gray-500">Horários:</span><div class="mt-1">${horariosTxt}</div></div></div></div>
+            <div class="bg-white rounded-lg shadow p-6"><h3 class="font-semibold text-gray-800 mb-3"><i class="fas fa-graduation-cap mr-2 text-green-600"></i>Acadêmico</h3><div class="space-y-2 text-sm"><div class="flex justify-between border-b pb-2"><span class="text-gray-500">Média:</span><span class="font-medium">${d.mediaGeral??'—'}</span></div><div class="flex justify-between border-b pb-2"><span class="text-gray-500">Tendência:</span><span class="font-medium">${fmt.tendencia(d.tendenciaNotas)}</span></div><div class="flex justify-between border-b pb-2"><span class="text-gray-500">Participação:</span><span class="font-medium">${fmt.participacao(d.participacao)}</span></div><div><span class="text-gray-500">Dificuldades:</span><div class="mt-1">${diffHtml}</div></div></div></div>
+            <div class="bg-white rounded-lg shadow p-6"><h3 class="font-semibold text-gray-800 mb-3"><i class="fas fa-home mr-2 text-purple-600"></i>Sociofamiliar</h3><div class="space-y-2 text-sm"><div class="flex justify-between border-b pb-2"><span class="text-gray-500">Transporte:</span><span class="font-medium">${fmt.transporte(d.transporte)}</span></div><div class="flex justify-between border-b pb-2"><span class="text-gray-500">Deslocamento:</span><span class="font-medium">${d.tempoDeslocamento||'—'} min</span></div><div class="flex justify-between border-b pb-2"><span class="text-gray-500">Acomp.:</span><span class="font-medium">${fmt.acomp(d.acompanhamento)}</span></div><div class="flex justify-between border-b pb-2"><span class="text-gray-500">Situação:</span><span class="font-medium">${fmt.sit(d.situacaoFamiliar)}</span></div><div><span class="text-gray-500">Riscos:</span><div class="mt-1">${frHtml}</div></div></div></div>
+            <div class="bg-white rounded-lg shadow p-6"><h3 class="font-semibold text-gray-800 mb-3"><i class="fas fa-tachometer-alt mr-2 text-yellow-600"></i>Pontuação</h3><div class="space-y-3">${Object.entries(res.pontos).map(([k,v])=>{const l={academico:'Acadêmico',transporte:'Transporte',familiar:'Familiar',saude:'Saúde',motivacional:'Motivacional'};const mx=Math.max(...Object.values(res.pontos),1);const c={academico:'#3B82F6',transporte:'#F59E0B',familiar:'#8B5CF6',saude:'#10B981',motivacional:'#EF4444'};return`<div><div class="flex justify-between text-xs mb-1"><span class="font-medium">${l[k]}</span><span class="font-bold">${v} pts</span></div><div class="h-2 bg-gray-200 rounded-full"><div class="h-full rounded-full" style="width:${(v/mx)*100}%;background:${c[k]}"></div></div></div>`}).join('')}</div></div>
+        </div>
+        <div class="mb-6"><h3 class="font-semibold text-gray-800 mb-4 text-lg"><i class="fas fa-tasks mr-2" style="color:${p.hex}"></i>Plano de Ações</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-4">${p.acoes.map(a=>`<div class="action-card bg-white p-5 rounded-lg shadow-sm" style="border-left-color:${p.hex}"><span class="text-xs font-bold px-2 py-0.5 rounded" style="background:${p.hex}20;color:${p.hex}">${a.t}</span><h4 class="font-bold text-gray-800 text-sm mt-1">${a.n}</h4><p class="text-xs text-gray-600 mt-1 mb-3">${a.d}</p><div class="text-xs text-gray-500 space-y-1"><p><i class="fas fa-user-tie mr-1" style="color:${p.hex}"></i><b>Resp.:</b> ${a.r}</p><p><i class="fas fa-calendar-alt mr-1" style="color:${p.hex}"></i><b>Prazo:</b> ${a.p}</p><p><i class="fas fa-tools mr-1" style="color:${p.hex}"></i><b>Recursos:</b> ${a.rc}</p></div></div>`).join('')}</div></div>
+        <div class="bg-white rounded-lg shadow p-6 mb-6"><h3 class="font-semibold text-gray-800 mb-4"><i class="fas fa-binoculars mr-2 text-[#005CA9]"></i>Monitoramento</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"><div class="bg-blue-50 p-4 rounded-lg"><h5 class="font-semibold text-blue-800 text-sm mb-2"><i class="fas fa-calendar-check mr-1"></i>Frequência</h5><ul class="text-xs text-gray-600 space-y-1"><li>✓ Checagem diária</li><li>✓ Contato semanal família</li><li>✓ Relatório quinzenal</li></ul></div><div class="bg-green-50 p-4 rounded-lg"><h5 class="font-semibold text-green-800 text-sm mb-2"><i class="fas fa-chart-line mr-1"></i>Resultados</h5><ul class="text-xs text-gray-600 space-y-1"><li>✓ Reavaliação 15 dias</li><li>✓ Ajuste se necessário</li><li>✓ Meta: +15% freq. 30d</li></ul></div><div class="bg-purple-50 p-4 rounded-lg"><h5 class="font-semibold text-purple-800 text-sm mb-2"><i class="fas fa-users mr-1"></i>Equipe</h5><ul class="text-xs text-gray-600 space-y-1"><li>✓ Reuniões semanais</li><li>✓ Comunicação família-escola</li><li>✓ Rede de apoio</li></ul></div></div><div class="p-4 bg-gray-50 rounded-lg"><h5 class="font-semibold text-sm text-gray-700 mb-3">Indicadores de Sucesso</h5><div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center"><div><div class="text-2xl font-bold text-blue-700">${Math.min((d.frequenciaPercentual||0)+15,100)}%</div><div class="text-[11px] text-gray-500">Meta freq.</div></div><div><div class="text-2xl font-bold text-green-700">${Math.min((d.mediaGeral||0)+1,10).toFixed(1)}</div><div class="text-[11px] text-gray-500">Meta média</div></div><div><div class="text-2xl font-bold text-purple-700">80%</div><div class="text-[11px] text-gray-500">Redução faltas</div></div><div><div class="text-2xl font-bold text-yellow-700">4</div><div class="text-[11px] text-gray-500">Encontros família</div></div></div></div></div>
+        <div class="text-center text-xs text-gray-400 mt-8 pt-4 border-t"><p>Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')} — URE Caieiras — SEDUC/SP 2026</p><p class="mt-1">Sistema de Mapeamento de Alunos Faltosos — Resolução SEDUC 39/2023</p></div>
+    </div>`;
+
+    setTimeout(() => {
+        const ctx = document.getElementById('chartRel');
+        if (ctx && typeof Chart !== 'undefined') {
+            if (chartInst) chartInst.destroy();
+            chartInst = new Chart(ctx.getContext('2d'), {
+                type: 'radar',
+                data: { labels: fatores.map(f => f.nome), datasets: [{ data: fatores.map(f => f.v), backgroundColor: 'rgba(204,0,0,0.12)', borderColor: '#CC0000', borderWidth: 2, pointBackgroundColor: fatores.map(f => f.c), pointBorderColor: '#fff', pointBorderWidth: 2 }] },
+                options: { scales: { r: { beginAtZero: true, max: 100, ticks: { stepSize: 20, callback: v => v + '%' } } }, plugins: { legend: { display: false } } }
+            });
+        }
+    }, 200);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GERAR PDF (html2pdf.js)
+   ═══════════════════════════════════════════════════════════ */
+function gerarPDF() {
+    const el = document.getElementById('pdfArea');
+    if (!el) { showToast('Área não encontrada', 'error'); return; }
+    showToast('Gerando PDF, aguarde...');
+
+    const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `relatorio-${(document.title||'aluno').replace(/\s+/g,'_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    html2pdf().set(opt).from(el).save().then(() => {
+        showToast('PDF gerado com sucesso!');
+    }).catch(err => {
+        console.error('Erro PDF:', err);
+        showToast('Erro ao gerar PDF. Use Ctrl+P.', 'error');
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INICIALIZAÇÃO
+   ═══════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+    navigate('home');
+});
+</script>
+</body>
+</html>
